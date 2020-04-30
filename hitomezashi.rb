@@ -5,8 +5,9 @@
 
 SCALE = 10
 
-LINES = [Array.new(rand(30)).map { rand(2) }, Array.new(rand(30)).map { rand(2) }]
-BOUNDARIES = LINES.map { |l| l.size * SCALE }
+LINES = [Array.new(6).map { rand(2) }, Array.new(3).map { rand(2) }]
+#[Array.new(rand(30)).map { rand(2) }, Array.new(rand(30)).map { rand(2) }]
+BOUNDARIES = LINES.map { |l| (l.size - 1) * SCALE }
 
 LINES_CODE = LINES.map.with_index do |l, i|
   l.map.with_index do |inner, index|
@@ -16,11 +17,11 @@ LINES_CODE = LINES.map.with_index do |l, i|
     other_index = -i + 1
     other_lines = LINES[other_index]
 
-    other_lines.size.times do |t|
+    (other_lines.size - 1).times do |t|
       if on
         possibilities = [
           index * SCALE,
-          (other_lines.size * SCALE) - (t * SCALE)
+          BOUNDARIES[other_index] - (t * SCALE)
         ]
 
         values = [
