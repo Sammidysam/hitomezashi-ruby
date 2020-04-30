@@ -5,63 +5,48 @@
 
 SCALE = 10
 
-COLUMNS = Array.new(rand(30)).map { rand(2) }
-ROWS = Array.new(rand(30)).map { rand(2) }
+LINES = [Array.new(rand(30)).map { rand(2) }, Array.new(rand(30)).map { rand(2) }]
+BOUNDARIES = LINES.map { |l| l.size * SCALE }
 
-TOP = ROWS.size * SCALE
-RIGHT = COLUMNS.size * SCALE
+LINES_CODE = LINES.map.with_index do |l, i|
+  l.map.with_index do |inner, index|
+    on = inner == 1
+    paths = []
 
-COLUMN_CODE = COLUMNS.map.with_index do |c, i|
-  on = c == 1
-  paths = []
+    other_index = -i + 1
+    other_lines = LINES[other_index]
 
-  ROWS.size.times do |t|
-    if on
-      x = i * SCALE
-      y = TOP - (t * SCALE)
+    other_lines.size.times do |t|
+      if on
+        possibilities = [
+          index * SCALE,
+          (other_lines.size * SCALE) - (t * SCALE)
+        ]
 
-      paths << %(
-        newpath
-          #{x} #{y} moveto
-          #{x} #{y - SCALE} lineto
+        values = [
+          possibilities[0] * other_index + possibilities[1] * i,
+          possibilities[0] * i + possibilities[1] * other_index
+        ]
 
-        stroke
-      )
+        paths << %(
+          newpath
+            #{values[0]} #{values[1]} moveto
+            #{values[0] - SCALE * i} #{values[1] - SCALE * other_index} lineto
+
+          stroke
+        )
+      end
+
+      on = !on
     end
 
-    on = !on
+    paths
   end
-
-  paths
-end
-
-ROW_CODE = ROWS.map.with_index do |r, i|
-  on = r == 1
-  paths = []
-
-  COLUMNS.size.times do |t|
-    if on
-      x = RIGHT - (t * SCALE)
-      y = i * SCALE
-
-      paths << %(
-        newpath
-          #{x} #{y} moveto
-          #{x - SCALE} #{y} lineto
-
-        stroke
-      )
-    end
-
-    on = !on
-  end
-
-  paths
 end
 
 puts %(
 %!PS-Adobe-3.0 EPSF-3.0
-%%BoundingBox: -5 -5 #{RIGHT + 5} #{TOP + 5}
+%%BoundingBox: -5 -5 #{BOUNDARIES[0] + 5} #{BOUNDARIES[1] + 5}
 
 0 0 translate
 
@@ -70,8 +55,7 @@ puts %(
 1 setlinejoin
 1 setlinecap
 
-#{COLUMN_CODE.join("\n")}
-#{ROW_CODE.join("\n")}
+#{LINES_CODE.join("\n")}
 
 showpage
 )
